@@ -1,0 +1,35 @@
+From a48151a5c2b515c4f5925467f1dba699879be537 Mon Sep 17 00:00:00 2001
+From: Frediano Ziglio <frediano.ziglio@cloud.com>
+Date: Fri, 9 Feb 2024 14:14:32 +0000
+Subject: [PATCH] CA-371311: Handle network USB devices as PCI for interface
+ rename
+
+Currently the presence of any network USB device causes issues
+with the interface rename due to not being considered during the
+rename.
+For instance this causes collisions causing renames to fail
+due to destination name already used.
+
+Signed-off-by: Frediano Ziglio <frediano.ziglio@cloud.com>
+---
+ tests/data/all_ethN.biosdevname | 8 ++++++++
+ tests/data/physical.biosdevname | 8 ++++++++
+ tests/test_biosdevname.py       | 4 ++++
+ xcp/net/biosdevname.py          | 4 ++++
+ 4 files changed, 24 insertions(+)
+
+diff --git a/xcp/net/biosdevname.py b/xcp/net/biosdevname.py
+index 5beb061..8e0a643 100644
+--- a/xcp/net/biosdevname.py
++++ b/xcp/net/biosdevname.py
+@@ -91,6 +91,10 @@ def all_devices_all_names():
+                  "BIOS device" not in dinfo ):
+                 continue
+ 
++            # Treat USB devices the PCI device of their host adapter
++            if dinfo.get("Bus Info", "").startswith("usb-") and "eth" in dinfo["Kernel name"]:
++                dinfo["Bus Info"] = dinfo["Bus Info"].split('-')[1]
++
+             kname = dinfo["Kernel name"]
+ 
+             if kname in devices:

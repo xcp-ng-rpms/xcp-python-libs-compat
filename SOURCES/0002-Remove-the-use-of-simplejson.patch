@@ -1,0 +1,65 @@
+From 57d2eb41c29b33b268b52ed67bfe295d34c32f8a Mon Sep 17 00:00:00 2001
+From: Andrew Cooper <andrew.cooper3@citrix.com>
+Date: Mon, 12 Feb 2024 10:48:20 +0000
+Subject: [PATCH] Remove the use of simplejson
+
+This logic dates back to the XenServer 6.x days using Python 2.4.
+
+simplejson was merged into the Python 2.5 standard library.
+
+Signed-off-by: Andrew Cooper <andrew.cooper3@citrix.com>
+diff --git a/xcp/net/ifrename/dynamic.py b/xcp/net/ifrename/dynamic.py
+index 21026a6..3508619 100644
+--- a/xcp/net/ifrename/dynamic.py
++++ b/xcp/net/ifrename/dynamic.py
+@@ -35,20 +35,12 @@ beginning with a # character.
+ __version__ = "1.0.0"
+ __author__  = "Andrew Cooper"
+ 
+-try:
+-    import json
+-except ImportError:
+-    try:
+-        import simplejson as json
+-    # The installer has no json.  In the meantime, there is a workaround
+-    except ImportError:
+-        pass
+-
+ 
+ from xcp.logger import LOG
+ from xcp.net.ifrename.macpci import MACPCI
+ from xcp.pci import pci_sbdfi_to_nic
+ from os.path import exists as pathexists
++import json
+ 
+ SAVE_HEADER = (
+     "# Automatically adjusted file.  Do not edit unless you are "
+@@ -126,10 +118,6 @@ class DynamicRules(object):
+         except ValueError:
+             LOG.warning("Dynamic rules appear to be corrupt")
+             return False
+-        # The installer has no json.
+-        except NameError:
+-            LOG.warning("Module json not available.  Cant parse dynamic rules.")
+-            return False
+ 
+         if "lastboot" in info:
+             for entry in info["lastboot"]:
+@@ -265,15 +253,8 @@ class DynamicRules(object):
+         lastboot = filter(validate, self.lastboot)
+         old = filter(validate, self.old)
+ 
+-        try:
+-            res += json.dumps({"lastboot": lastboot, "old": old},
+-                              indent=4, sort_keys=True)
+-            # Installer has no json.  This will do in the meantime
+-        except NameError:
+-            res += ('{"lastboot":%s,"old":%s}'
+-                    % ( ("%s" % (lastboot,)).replace("'", '"'),
+-                        ("%s" % (old,)).replace("'", '"'))
+-                    )
++        res += json.dumps({"lastboot": lastboot, "old": old},
++                          indent=4, sort_keys=True)
+ 
+         return res
+ 

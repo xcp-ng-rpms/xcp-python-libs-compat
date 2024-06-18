@@ -1,4 +1,7 @@
-%global package_speccommit d31843d3f6df7b2e59f072fc42ebc172742eabc8
+%global package_speccommit fe76f1d7138a43d098e03189371e29fc00382597
+%global usver 2.3.5
+%global xsver 6
+%global xsrel %{xsver}%{?xscount}%{?xshash}
 %global package_srccommit v2.3.5
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
@@ -8,14 +11,16 @@
 Summary: Common XenServer Python classes
 Name: %{py_name}-compat
 Version: 2.3.5
-Release: 3%{?xsrel}%{?dist}
+Release: %{?xsrel}%{?dist}
 Source0: xcp-python-libs-2.3.5.tar.gz
+Patch0: 0001-CA-371311-Handle-network-USB-devices-as-PCI-for-inte.patch
+Patch1: 0002-Remove-the-use-of-simplejson.patch
 License: GPL
 
 Group: Applications/System
 BuildArch: noarch
 Requires: biosdevname
-Provides: xcp-python-libs >= 2.3.5-3
+Provides: xcp-python-libs = %{version}-%{release}
 Obsoletes: xcp-python-libs <= 2.3.5-2
 
 BuildRequires: python-devel python-setuptools python2-mock
@@ -48,6 +53,15 @@ cd tests
 
 
 %changelog
+* Wed Mar 13 2024 Frediano Ziglio <frediano.ziglio@cloud.com> - 2.3.5-6
+- Fix issue with USB ethernet cards not taking ethX name
+
+* Mon Mar 11 2024 Frediano Ziglio <frediano.ziglio@cloud.com> - 2.3.5-5
+- Bump release
+
+* Fri Mar 08 2024 Frediano Ziglio <frediano.ziglio@cloud.com> - 2.3.5-4
+- CA-371311: Handle network USB devices as PCI for interface
+
 * Wed Nov 8 2023 Lin Liu <lin.liu@citrix.com> - 2.3.5-3
 - CP-45980: Obsoletes origin xcp-python-libs
 
